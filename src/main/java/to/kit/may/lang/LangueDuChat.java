@@ -2,27 +2,30 @@ package to.kit.may.lang;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
 
 /**
  * La langue du chat.
  * @author May Sasai
  */
 public class LangueDuChat {
-	private final Predicate<int[]> splitPredicate;
+	private final Chopper chopBefore;
+	private final Chopper chopAfter;
 
-	public static final Predicate<int[]> DefaultSplitPredicate = i -> {
-		var type = i[1];
-		var lastType = i[2];
+	public static final Chopper NotChop = (ch, type, lastType) -> false;
 
+	public static final Chopper DefaultChopBefore = (ch, type, lastType) -> {
 		return type != lastType && type != Character.MODIFIER_LETTER;
 	};
 
-	public static final Predicate<int[]> JaSplitPredicate = DefaultSplitPredicate.or(i -> {
-		var ch = i[0];
-
+	public static final Chopper JaChopBefore = DefaultChopBefore.or((ch, type, lastType) -> {
 		return 'ｦ' <= ch && ch <= 'ﾝ';
 	});
+
+	public static final Chopper JaChopAfter = (ch, type, lastType) -> {
+		var lower = Character.toLowerCase(ch);
+
+		return 'a' == lower || 'e' == lower || 'i' == lower || 'o' == lower || 'u' == lower;
+	};
 
 	public List<String> chop(final String text) {
 		var list = new ArrayList<String>();
@@ -32,13 +35,18 @@ public class LangueDuChat {
 		for (var ch : text.toCharArray()) {
 			var lower = Character.toLowerCase(ch);
 			var type = Character.getType(lower);
-			var split = this.splitPredicate.test(new int[] { ch, type, lastType });
+			var chopBefore = this.chopBefore.test(ch, type, lastType);
+			var chopAfter = this.chopAfter.test(ch, type, lastType);
 
-			if (split && 0 < buff.length()) {
+			if (chopBefore && 0 < buff.length()) {
 				list.add(buff.toString());
 				buff.delete(0, buff.length());
 			}
 			buff.append(ch);
+			if (chopAfter) {
+				list.add(buff.toString());
+				buff.delete(0, buff.length());
+			}
 			lastType = type;
 		}
 		if (0 < buff.length()) {
@@ -61,11 +69,18 @@ public class LangueDuChat {
 		return result.toString();
 	}
 
-	public LangueDuChat(Predicate<int[]> predicate) {
-		this.splitPredicate = predicate;
+	public LangueDuChat(Chopper chopBefore, Chopper chopAfter) {
+		this.chopBefore = chopBefore;
+		this.chopAfter = chopAfter;
+	}
+
+	public LangueDuChat(Chopper chopBefore) {
+		this.chopBefore = chopBefore;
+		this.chopAfter = NotChop;
 	}
 
 	public LangueDuChat() {
-		this.splitPredicate = DefaultSplitPredicate;
+		this.chopBefore = DefaultChopBefore;
+		this.chopAfter = NotChop;
 	}
 }

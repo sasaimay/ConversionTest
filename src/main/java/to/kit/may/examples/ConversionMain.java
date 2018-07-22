@@ -9,12 +9,13 @@ public class ConversionMain {
 	private static final String CHOP_TEST_EN = "This cookie is the shape of a cat's tongue.";
 	private static final String CHOP_TEST_JA = "ﾗﾝｸﾞ･ﾄﾞ･ｼｬ(フランス語：Langue de chat)ﾊﾟﾋﾟﾌﾟひらがなカタカナａｂｃＡＢＣ";
 	private static final String HALF_KANA = "ｧｱｰｨｲｩｳｪｴｫｵｶｶﾞｷｷﾞｸｸﾞｹｹﾞｺｺﾞｻｻﾞｼｼﾞｽｽﾞｾｾﾞｿｿﾞﾀﾀﾞﾁﾁﾞｯﾂﾂﾞﾃﾃﾞﾄﾄﾞﾅﾆﾇﾈﾉﾊﾊﾞﾊﾟﾋﾋﾞﾋﾟﾌﾌﾞﾌﾟﾍﾍﾞﾍﾟﾎﾎﾞﾎﾟﾏﾐﾑﾒﾓｬﾔｭﾕｮﾖﾗﾘﾙﾚﾛﾜﾜｲｴｦﾝｳﾞ";
+	private static final String ROMAN = "wagahaihatampakuwoaisurutyazintekinekodearu。";
 
 	private void execute() {
 		var text = "012０１２＊＋，－．／abcａｂｃあぁいぃうぅえぇおぉｱｲｳｴｵｶﾞｷﾞｸﾞｹﾞｺﾞ";
 		var upper = text.toUpperCase(Locale.JAPANESE);
 		var norm = Normalizer.normalize(text, Normalizer.Form.NFKC);
-		var chat = new LangueDuChat(LangueDuChat.JaSplitPredicate);
+		var chat = new LangueDuChat(LangueDuChat.JaChopBefore, LangueDuChat.JaChopAfter);
 
 		System.out.println(upper);
 		System.out.println(Character.toUpperCase('ａ'));
@@ -22,6 +23,7 @@ public class ConversionMain {
 		System.out.println(String.join("|", chat.chop(CHOP_TEST_EN)));
 		System.out.println(String.join("|", chat.chop(CHOP_TEST_JA)));
 		System.out.println(String.join("|", chat.chop(HALF_KANA)));
+		System.out.println(String.join("|", chat.chop(ROMAN)));
 	}
 
 	public static void main(String[] args) {
