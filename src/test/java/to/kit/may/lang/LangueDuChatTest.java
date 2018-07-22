@@ -21,8 +21,9 @@ class LangueDuChatTest {
 	private static final String PC = "PC:ﾊﾟ-ｿﾅﾙ･ｺﾝﾋﾟｭｰﾀｰ";
 	private static final String NEKO = "こんなに寝ていて勤まるものなら猫にでも出来ぬ事はないと。";
 	private static final String ROMAN = "wagahaiHAtampakuWOaisurutyazintekinekodearu。";
+	private static final String ROMAN_NYA = "ippainyanko";
 	private final LangueDuChat chatEn = new LangueDuChat();
-	private final LangueDuChat chatJa = new LangueDuChat(LangueDuChat.JaChopBefore);
+	private final LangueDuChat chatJa = new LangueDuChat(LangueDuChat.JaChopBefore.and((ch, type, lastType) -> true));
 	private final LangueDuChat chatJaR = new LangueDuChat(LangueDuChat.JaChopBefore, LangueDuChat.JaChopAfter);
 
 	@Test
@@ -92,28 +93,45 @@ class LangueDuChatTest {
 	}
 
 	@Test
-	void testToFullKana() {
-		var halfKanaToH = this.chatJaR.filter(HALF_KANA, JaFilterType.toFullHiragana);
-		var halfKanaToK = this.chatJaR.filter(HALF_KANA, JaFilterType.toFullKatakana);
+	void testToFullHiragana() {
+		var halfKana = this.chatJaR.filter(HALF_KANA, JaFilterType.toFullHiragana);
+		var katakana = this.chatJaR.filter(FULL_KATAKANA, JaFilterType.toFullHiragana);
 		var pcHira = this.chatJaR.filter(PC, JaFilterType.toFullHiragana);
-		var pcKata = this.chatJaR.filter(PC, JaFilterType.toFullKatakana);
 		var alphaToH = this.chatJaR.filter(HALF_UPPER, JaFilterType.toFullHiragana);
 		var romanToH = this.chatJaR.filter(ROMAN, JaFilterType.toFullHiragana);
-		var romanToK = this.chatJaR.filter(ROMAN, JaFilterType.toFullKatakana);
+		var nya = this.chatJaR.filter(ROMAN_NYA, JaFilterType.toFullHiragana);
 
-		assertEquals(FULL_HIRAGANA, halfKanaToH);
-		assertEquals(FULL_KATAKANA, halfKanaToK);
+		assertEquals(FULL_HIRAGANA, halfKana);
+		assertEquals(FULL_HIRAGANA, katakana);
 		assertEquals("PC:ぱーそなる・こんぴゅーたー", pcHira);
+		assertEquals("あBCDEFGHIJKLMNOPQRSTUVWXYZ", alphaToH);
+		assertEquals("わがはいはたんぱくをあいするちゃじんてきねこである。", romanToH);
+		assertEquals("いっぱいにゃんこ", nya);
+	}
+
+	@Test
+	void testToFullKatakana() {
+		var halfKana = this.chatJaR.filter(HALF_KANA, JaFilterType.toFullKatakana);
+		var hiragana = this.chatJaR.filter(FULL_HIRAGANA, JaFilterType.toFullKatakana);
+		var pcKata = this.chatJaR.filter(PC, JaFilterType.toFullKatakana);
+		var alphaToK = this.chatJaR.filter(HALF_UPPER, JaFilterType.toFullKatakana);
+		var romanToK = this.chatJaR.filter(ROMAN, JaFilterType.toFullKatakana);
+		var nya = this.chatJaR.filter(ROMAN_NYA, JaFilterType.toFullKatakana);
+
+		assertEquals(FULL_KATAKANA, halfKana);
+		assertEquals(FULL_KATAKANA, hiragana);
 		assertEquals("PC:パーソナル・コンピューター", pcKata);
-		assertEquals(HALF_UPPER, alphaToH);
-		assertEquals(ROMAN, romanToH);
-		assertEquals(ROMAN, romanToK);
+		assertEquals("アBCDEFGHIJKLMNOPQRSTUVWXYZ", alphaToK);
+		assertEquals("ワガハイハタンパクヲアイスルチャジンテキネコデアル。", romanToK);
+		assertEquals("イッパイニャンコ", nya);
 	}
 
 	@Test
 	void testToNeko() {
 		var neko = this.chatJa.filter(NEKO, JaFilterType.toNeko);
+		var pc = this.chatJa.filter(PC, JaFilterType.toFullAlpha, JaFilterType.toFullHiragana, JaFilterType.toNeko);
 
 		assertEquals("こんにゃに寝ていて勤まるもにょにゃら猫にでも出来にゅ事はにゃいと。", neko);
+		assertEquals("ＰＣ:ぱーそにゃる・こんぴゅーたー", pc);
 	}
 }

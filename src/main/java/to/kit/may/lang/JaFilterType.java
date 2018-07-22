@@ -43,6 +43,8 @@ public enum JaFilterType implements FilterType, JaFilter {
 				.forEach(i -> buff.append((char) i));
 		return buff.toString();
 	}),
+	/** ひらがなに変換. */
+	toHiraganaFromRoman(romanFilter.toHiragana),
 	/** 半角ｶﾅに変換. */
 	toHalfKana(text -> {
 		var buff = new StringBuilder();
@@ -72,6 +74,14 @@ public enum JaFilterType implements FilterType, JaFilter {
 		return buff.toString();
 	}),
 	/** 全角ひらがなに変換. */
+	toHiraganaFromKatakana(text -> {
+		var buff = new StringBuilder();
+
+		text.chars()
+				.map(i -> 'ァ' <= i && i <= 'ヴ' ? 'ぁ' + i - 'ァ' : i)
+				.forEach(i -> buff.append((char)i));
+		return buff.toString();
+	}),
 	toFullHiragana(text -> {
 		if ("ｰ".equals(text) || "-".equals(text)) {
 			return "ー";
@@ -87,9 +97,17 @@ public enum JaFilterType implements FilterType, JaFilter {
 		if (ix != -1) {
 			return String.valueOf((char) ('ぁ' + ix / 2));
 		}
-		return text;
+		return toHiraganaFromKatakana.apply(toHiraganaFromRoman.apply(text));
 	}),
 	/** 全角カタカナに変換. */
+	toKatakanaFromHiragana(text -> {
+		var buff = new StringBuilder();
+
+		text.chars()
+				.map(i -> 'ぁ' <= i && i <= 'ゔ' ? 'ァ' + i - 'ぁ' : i)
+				.forEach(i -> buff.append((char)i));
+		return buff.toString();
+	}),
 	toFullKatakana(text -> {
 		if ("ｰ".equals(text) || "-".equals(text)) {
 			return "ー";
@@ -105,7 +123,7 @@ public enum JaFilterType implements FilterType, JaFilter {
 		if (ix != -1) {
 			return String.valueOf((char) ('ァ' + ix / 2));
 		}
-		return text;
+		return toKatakanaFromHiragana.apply(toHiraganaFromRoman.apply(text));
 	}),
 	/** ねこに変換. */
 	toNeko(text -> {
